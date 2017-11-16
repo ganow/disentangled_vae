@@ -8,7 +8,7 @@ import numpy as np
 class DataManager(object):
   def load(self):
     # Load dataset
-    dataset_zip = np.load('data/dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz')
+    dataset_zip = np.load('data/dsprites_ndarray_co1sh3sc6or40x32y32_64x64.npz', encoding='bytes')
 
     # print('Keys in the dataset:', dataset_zip.keys())
     #  ['metadata', 'imgs', 'latents_classes', 'latents_values']
@@ -19,7 +19,7 @@ class DataManager(object):
     metadata        = dataset_zip['metadata'][()]
 
     # Define number of values per latents and functions to convert to indices
-    latents_sizes = metadata['latents_sizes']
+    latents_sizes = metadata[b'latents_sizes']
     # [ 1,  3,  6, 40, 32, 32]
     # color, shape, scale, orientation, posX, posY
 
@@ -29,7 +29,7 @@ class DataManager(object):
     self.latents_bases = np.concatenate((latents_sizes[::-1].cumprod()[::-1][1:],
                                          np.array([1,])))
     # [737280, 245760, 40960, 1024, 32, 1]
-    
+
   @property
   def sample_size(self):
     return self.n_samples

@@ -39,24 +39,24 @@ def train(sess,
 
   reconstruct_check_images = manager.get_random_images(10)
 
-  indices = range(n_samples)
+  indices = [idx for idx in range(n_samples)]
 
   step = 0
-  
+
   # Training cycle
   for epoch in range(flags.epoch_size):
     # Shuffle image indices
     random.shuffle(indices)
-    
+
     avg_cost = 0.0
     total_batch = n_samples // flags.batch_size
-    
+
     # Loop over all batches
     for i in range(total_batch):
       # Generate image batch
       batch_indices = indices[flags.batch_size*i : flags.batch_size*(i+1)]
       batch_xs = manager.get_images(batch_indices)
-      
+
       # Fit training using batch data
       if step % SUMMARY_INTERVAL == SUMMARY_INTERVAL-1:
         cost, summary_str = model.partial_fit(sess, batch_xs, summary_op)
@@ -81,7 +81,7 @@ def train(sess,
     # Save checkpoint
     saver.save(sess, flags.checkpoint_dir + '/' + 'checkpoint', global_step = epoch)
 
-    
+
 def reconstruct_check(sess, model, images):
   # Check image reconstruction
   x_reconstruct = model.reconstruct(sess, images)
@@ -101,7 +101,7 @@ def disentangle_check(sess, model, manager, save_original=False):
   img = manager.get_image(shape=1, scale=2, orientation=5)
   if save_original:
     imsave("original.png", img.reshape(64, 64).astype(np.float32))
-    
+
   batch_xs = [img]
   z_mean, z_log_sigma_sq = model.transform(sess, batch_xs)
   z_sigma_sq = np.exp(z_log_sigma_sq)[0]
@@ -132,7 +132,7 @@ def disentangle_check(sess, model, manager, save_original=False):
       reconstr_img = model.generate(sess, z_mu=z_mean2)
       rimg = reconstr_img[0].reshape(64, 64)
       imsave("disentangle_img/check_z{0}_{1}.png".format(target_z_index,ri), rimg)
-      
+
 
 def load_checkpoints(sess):
   saver = tf.train.Saver()
@@ -152,10 +152,10 @@ def main(argv):
   manager.load()
 
   sess = tf.Session()
-  
+
   model = VariationalAutoencoder(learning_rate=flags.learning_rate,
                                  beta=flags.beta)
-  
+
   sess.run(tf.global_variables_initializer())
 
   saver = load_checkpoints(sess)
@@ -169,7 +169,7 @@ def main(argv):
     reconstruct_check(sess, model, reconstruct_check_images)
     # Disentangle check
     disentangle_check(sess, model, manager)
-  
+
 
 if __name__ == '__main__':
   tf.app.run()
